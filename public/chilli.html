@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Chilli | Live Pro Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/css/chilli.css" />
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="brand">
+            <div class="logo"></div>
+            <h1>Chilli Live</h1>
+        </div>
+        <button id="toggle-controls" class="mobile-btn">☰</button>
+    </header>
+
+    <main>
+        <!-- Sidebar: Controls -->
+        <div class="controls" id="controlsPanel">
+            <h3>Mission Control</h3>
+            
+            <div class="input-group">
+                <input id="username" placeholder="Rider Name" value="Rider" />
+                <button onclick="createSession()">New</button>
+            </div>
+            <div class="input-group">
+                <input id="sessId" placeholder="Session ID" />
+                <button class="btn-sec" onclick="joinSession()">Join</button>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="input-group">
+                <input id="src" placeholder="Start Location" readonly />
+                <button class="btn-icon" onclick="setMode('src')">📍</button>
+            </div>
+            <div class="input-group">
+                <input id="dst" placeholder="Destination" readonly />
+                <button class="btn-icon" onclick="setMode('dst')">🏁</button>
+            </div>
+
+            <div class="action-buttons">
+                <button onclick="calcRoute()">🚀 Start Route</button>
+                <button class="btn-sec" onclick="toggleGhost()" id="ghostBtn">👻 Sim</button>
+            </div>
+            
+            <div id="status">Status: Offline</div>
+        </div>
+
+        <!-- Sidebar: Teammates -->
+        <div class="teammates" id="tmPanel">
+            <div class="tm-header">Live Squad</div>
+            <div id="tmList"></div>
+        </div>
+
+        <!-- Bottom HUD -->
+        <div class="hud-container">
+            <div class="hud-stats">
+                <div class="stat"><span>SPD</span><strong id="speed">0.0</strong><small>km/h</small></div>
+                <div class="stat"><span>DIST</span><strong id="dist">0.0</strong><small>km</small></div>
+                <div class="stat"><span>TIME</span><strong id="time">00:00</strong></div>
+                <div class="stat hide-mobile"><span>CAL</span><strong id="kcal">0</strong></div>
+            </div>
+            <div class="elevation-graph" id="elevGraph"></div>
+        </div>
+
+        <div id="map"></div>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="/js/chilli.js"></script>
+</body>
+</html>

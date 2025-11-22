@@ -1,0 +1,16 @@
+{
+  "name": "chilli",
+  "version": "1.0.0",
+  "description": "Chilli is a collaborative, real-time cycling companion application designed to bridge the gap between solitary fitness tracking and social group riding",
+  "license": "ISC",
+  "author": "Skibbi Coders",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
