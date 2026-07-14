@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <title>Route Elevation Tester</title>
+ <link
+   rel="stylesheet"
+   href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+ />
+ <style>
+   body {
+     margin: 0;
+     font-family: Arial, sans-serif;
+   }
+   #map {
+     height: 80vh;
+     width: 100vw;
+   }
+   #panel {
+     padding: 10px;
+     background: #f7f7f7;
+     border-top: 1px solid #ccc;
+   }
+ </style>
+</head>
+<body>
+ <div id="map"></div>
+ <div id="panel">
+   <strong>Click two points on the map</strong> → The frontend gets the route from OSRM, then sends only the polyline to your API.
+   <pre id="output"></pre>
+ </div>
+
+
+ <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+ <script>
+   const map = L.map('map').setView([12.935, 77.58], 15);
+   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+     maxZoom: 19,
+   }).addTo(map);
+
+
+   let markers = [];
+   let apiUrl = "http://localhost:8000/route-elevation"; // your API
+   const osrmBase = "https://router.project-osrm.org/route/v1/driving";
+
+
+   map.on("click", async (e) => {
+     // reset if two markers already placed
+     if (markers.length === 2) {
+       markers.forEach(m => map.removeLayer(m));
+       markers = [];
+       document.querySelector("#output").textContent = "";
+     }
+
+
+     const marker = L.marker(e.latlng).addTo(map);
+     markers.push(marker);
+
+
+     // need 2 points
+     if (markers.length !== 2) return;
+
+
+     const start = markers[0].getLatLng();
+     const end = markers[1].getLatLng();
+     document.querySelector("#output").textContent = "Loading route...";
+
+
+     try {
+       // 1. GET ROUTE FROM OSRM (for geometry only)
+       const osrmUrl =
+         `${osrmBase}/${start.lng},${start.lat};${end.lng},${end.lat}` +
+         "?overview=full&geometries=polyline";
+
+
+       const osrmRes = await fetch(osrmUrl);
+       const osrmData = await osrmRes.json();
+
+
+       if (!osrmData.routes || osrmData.routes.length === 0) {
+         document.querySelector("#output").textContent = "OSRM: No route found.";
+         return;
+       }
+
+
+       const poly = osrmData.routes[0].geometry;
+
+
+       document.querySelector("#output").textContent = "Sending polyline to server...";
+
+
+       // 2. CALL YOUR FASTAPI (polyline-only)
+       const apiRes = await fetch(
+         `${apiUrl}?poly=${encodeURIComponent(poly)}`
+       );
+
+
+       const data = await apiRes.json();
+       document.querySelector("#output").textContent = JSON.stringify(data, null, 2);
+
+
+       // 3. DRAW COLORED SLOPE POLYLINE
+       if (data.points) {
+         for (let i = 1; i < data.points.length; i++) {
+           const p1 = data.points[i - 1];
+           const p2 = data.points[i];
+
+
+           const slope = p2.slope_pct || 0;
+           let color = "blue";
+
+
+           if (slope > 8) color = "#d73027";       // steep uphill
+           else if (slope > 4) color = "#fc8d59";  // moderate uphill
+           else if (slope > 1) color = "#fee08b";  // mild uphill
+           else if (slope < -8) color = "#4575b4"; // steep downhill
+           else if (slope < -4) color = "#74add1";
+           else if (slope < -1) color = "#abd9e9";
+
+
+           L.polyline(
+             [
+               [p1.lat, p1.lon],
+               [p2.lat, p2.lon],
+             ],
+             { color: color, weight: 5 }
+           ).addTo(map);
+         }
+       }
+     } catch (err) {
+       document.querySelector("#output").textContent = "Error: " + err;
+     }
+   });
+ </script>
+</body>
+</html>
+
+
+
