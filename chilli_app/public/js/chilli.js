@@ -8,6 +8,7 @@ const PYTHON_API_URL = "http://localhost:8000"; // Ensure your Python server is 
 const map = L.map('map', { zoomControl: false }).setView([0, 0], 2);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
+
 // --- LAYERS ---
 let routeLayerGroup = L.featureGroup().addTo(map); // Holds the colored segments
 let myMarker = null;
